@@ -1,6 +1,8 @@
+import os
+from clases import Cleaner, LinearRegressionModel
+from werkzeug.utils import secure_filename
 import pandas as pd
-from linear_regression_model import LinearRegressionModel
-from cleaner import Cleaner
+
 
 def read_user_input(file_path):
     # Read user input from a text file
