@@ -1,88 +1,41 @@
-from flask import Flask, request, render_template, send_from_directory
-import os
-from clases import Cleaner, LinearRegressionModel
-from werkzeug.utils import secure_filename
 import pandas as pd
+from linear_regression_model import LinearRegressionModel
+from cleaner import Cleaner
 
+def read_user_input(file_path):
+    # Read user input from a text file
+    try:
+        user_input = pd.read_csv(file_path, sep='\t', index_col=0)
+        return user_input
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        return None
 
-model = None
+def main():
+    # Specify the path to your CSV file
+    file_path = 'path/to/your/data.csv'
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'archivos'
+    # Instantiate the Cleaner class to clean the data
+    cleaner = Cleaner(file_path)
+    cleaned_data = cleaner.clean()
 
-@app.route('/')
-def upload():
-    return render_template("index.html")
+    # Instantiate the LinearRegressionModel class and perform regression
+    linear_model = LinearRegressionModel(cleaned_data)
+    linear_model.perform_regression()
 
-@app.route('/upload', methods=['POST'])
-def upload_file_post():
-    file = request.files['file']
-    if file.filename == '':
-        return 'No file in the bucket'
-    if file.filename.split('.')[-1] != 'csv':
-        return 'The file must be a csv file'
-    else:
-        global model
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        model = file_path  # Update the global variable with file path
-        return render_template('index.html', uploaded='Archivo subido')
+    # Read user input from a text file
+    user_input_path = 'user_input.txt'
+    user_input = read_user_input(user_input_path)
 
-model = model
+    if user_input is not None:
+        # Predict user input
+        prediction = linear_model.predict_user_input(user_input)
 
-@app.route('/clean')
-def clean_and_show():
-    global model
-    if model != None:
-        cleaned_file = Cleaner(file_path=model).clean()
-        model = cleaned_file
-        return render_template('index.html', cleaned_file='archivo limpio')
-    else:
-        return render_template('index.html', cleaned_file='no hay archivos')
+        # Save results in a text file
+        output_file_path = linear_model.results('output.txt')
 
-model = model
-
-@app.route('/feed')
-def feed_the_model():
-    global model
-    model = LinearRegressionModel(data=model)
-    model.perform_regression()
-    return render_template('index.html', feed_model='El modelo ha sido entrenado')
-
-model = model
-
-@app.route('/predict', methods=['POST'])
-def prediction():
-    global model  # Assuming you have initialized the model somewhere in your code
-
-    if model:
-        pricem2 = request.form.get('pricem2', 'test')
-        surface = request.form.get('surface', 'test')
-        covered = request.form.get('covered', 'test')
-        lat = request.form.get('lat', 'test')
-        lon = request.form.get('lon', 'test')
-
-    # You need to handle the case where model is not an instance of LinearRegressionModel
-        user_predict = pd.DataFrame({'price_m2': [pricem2], 'surface': [surface], 'covered': [covered], 'lat': [lat], 'lon': [lon]})
-        user_prediction = model.predict_user_input(user_predict)
-
-        model.results()
-
-        return render_template('index.html', userprediction=f'The house price would be: {user_prediction:,.2f} pesos') 
-    else:
-        return render_template('index.html', userprediction='TNo hay modelo para entranar') 
-    
-
-model = model
-
-@app.route('/download')
-
-def descarga():
-    return send_from_directory(app.config['UPLOAD_FOLDER'], 'output.txt', as_attachment=True)
-
-
-
+        print(f"Prediction for user input: ${prediction:,.2f}")
+        print(f"Results saved in {output_file_path}")
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    main()
