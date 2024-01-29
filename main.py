@@ -38,7 +38,7 @@ def main():
     data = read_data_from_github(repo_url, file_path)
 
     # Instantiate the Cleaner class to clean the data
-    cleaner = Cleaner(file_path)  # Pass the file path, not the data
+    cleaner = Cleaner(data)
     cleaned_data = cleaner.clean()
 
     # Instantiate the LinearRegressionModel class and perform regression
