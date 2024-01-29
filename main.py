@@ -1,21 +1,44 @@
-import os
 from clases import Cleaner, LinearRegressionModel
-from werkzeug.utils import secure_filename
-import pandas as pd
 import requests
 from io import StringIO
+import pandas as pd
+
+def read_data_from_github(repo_url, file_path):
+    # Construct the Raw URL for the file in the GitHub repository
+    raw_url = f"{repo_url}/raw/main/{file_path}"
+    
+    # Fetch the content of the CSV file from GitHub
+    response = requests.get(raw_url)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Convert the CSV content to a DataFrame
+        data = pd.read_csv(StringIO(response.text))
+        return data
+    else:
+        raise Exception(f"Failed to fetch data from GitHub. Status code: {response.status_code}")
 
 def read_user_input(file_path):
     # Read user input from a text file
-    user_input_df = pd.read_csv(file_path)
-    return user_input_df
+    try:
+        user_input = pd.read_csv(file_path, sep='\t', index_col=0)
+        return user_input
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found.")
+        return None
 
 def main():
-    # Specify the path to your CSV file
-    csv_file_path = 'data_today.csv'
+    # Specify your GitHub repository URL
+    repo_url = 'https://github.com/Oscaretz/house_prediction'
+
+    # Specify the relative path to your CSV file within the repository
+    file_path = 'data.csv'
+
+    # Read data from GitHub
+    data = read_data_from_github(repo_url, file_path)
 
     # Instantiate the Cleaner class to clean the data
-    cleaner = Cleaner(csv_file_path)
+    cleaner = Cleaner(data)
     cleaned_data = cleaner.clean()
 
     # Instantiate the LinearRegressionModel class and perform regression
@@ -23,18 +46,18 @@ def main():
     linear_model.perform_regression()
 
     # Read user input from a text file
-    user_input_file_path = 'data.csv'
-    user_input = read_user_input(user_input_file_path)
+    user_input_path = 'user_input.txt'
+    user_input = read_user_input(user_input_path)
 
-    # Predict user input
-    prediction = linear_model.predict_user_input(user_input)
+    if user_input is not None:
+        # Predict user input
+        prediction = linear_model.predict_user_input(user_input)
 
-    # Display results
-    output_file_path = linear_model.results()
+        # Save results in a text file
+        output_file_path = linear_model.results('output.txt')
 
-    print(f"Prediction for user input: ${prediction:,.2f}")
-    print(f"Results saved in {output_file_path}")
+        print(f"Prediction for user input: ${prediction:,.2f}")
+        print(f"Results saved in {output_file_path}")
 
 if __name__ == "__main__":
     main()
-
