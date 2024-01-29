@@ -2,30 +2,31 @@ name: predictes
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
-jobs: 
+jobs:
   builds:
     runs-on: ubuntu-latest
-    
-    permissions: 
-        contents: write
 
     steps:
-      - name: checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: '3.9'  # Update to the latest stable version
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
 
       - name: Run Script
         run: python main.py
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
-        with: 
+        with:
           commit_message: Price predicted!
           commit_user_name: Oscar Martinez [GitHub Actions]
           commit_author: Oscaretz
