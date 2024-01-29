@@ -29,7 +29,7 @@ def read_user_input(file_path):
 
 def main():
     # Specify your GitHub repository URL
-    repo_url = 'your_repo_url_here'
+    repo_url = 'https://github.com/Oscaretz/house_prediction'
 
     # Specify the relative path to your CSV file within the repository
     file_path = 'data.csv'
