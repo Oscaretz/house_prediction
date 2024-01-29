@@ -162,7 +162,7 @@ class LinearRegressionModel:
         return user_prediction[0]
 
     def results(self, filename='output.txt'):
-        with open(f'archivos/{filename}', 'w') as file:
+        with open({filename},'w') as file:
             # Redirecting print statements to the file
             original_stdout = sys.stdout
             sys.stdout = file
