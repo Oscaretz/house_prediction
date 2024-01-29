@@ -13,7 +13,7 @@ def read_user_input(file_path):
 
 def main():
     # Specify the path to your CSV file
-    file_path = 'path/to/your/data.csv'
+    file_path = '/data.csv'
 
     # Instantiate the Cleaner class to clean the data
     cleaner = Cleaner(file_path)
