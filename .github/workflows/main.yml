@@ -22,6 +22,6 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Run Tests
+    - name: Run Gunicorn
       run: |
-        python main.py
+        python gunicorn -b 0.0.0.0:5000 main:app
