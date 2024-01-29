@@ -162,7 +162,7 @@ class LinearRegressionModel:
         return user_prediction[0]
 
     def results(self, filename='output.txt'):
-        with open({filename},'w') as file:
+        with open(filename,'w') as file:
             # Redirecting print statements to the file
             original_stdout = sys.stdout
             sys.stdout = file
@@ -182,14 +182,13 @@ class LinearRegressionModel:
             rmse = mean_squared_error(y_test, predictions, squared=False)
             r_squared = model.score(X_test, y_test)
             prediction = self.userprediction
-            print('House to predict: \n', self.user_input_data)
-            print('\n-Mean Absolute Error:', mae)
-            print('-Mean Squared Error:', mse)
-            print('-Root Mean Squared Error:', rmse)
-            print('-R^2:', r_squared)
-            print(f'\nPredicted price based on user input: ${prediction:,.2f}', file=file)
-            sys.stdout = original_stdout # Resetting print output to console
-        
-        return os.path.join('archivos', 'output.txt')
+            file.write('House to predict: \n', self.user_input_data)
+            file.write('\n-Mean Absolute Error:', mae)
+            file.write('-Mean Squared Error:', mse)
+            file.write('-Root Mean Squared Error:', rmse)
+            file.write('-R^2:', r_squared)
+            file.write(f'\nPredicted price based on user input: ${prediction:,.2f}', file=file)
+            
+        return file_name
 
 #--------------------------------------------------
