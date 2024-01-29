@@ -2,7 +2,23 @@ import os
 from clases import Cleaner, LinearRegressionModel
 from werkzeug.utils import secure_filename
 import pandas as pd
+import requests
+from io import StringIO
 
+def read_data_from_github(repo_url, file_path):
+    # Construct the Raw URL for the file in the GitHub repository
+    raw_url = f"{repo_url}/raw/main/{file_path}"
+    
+    # Fetch the content of the CSV file from GitHub
+    response = requests.get(raw_url)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Convert the CSV content to a DataFrame
+        data = pd.read_csv(StringIO(response.text))
+        return data
+    else:
+        raise Exception(f"Failed to fetch data from GitHub. Status code: {response.status_code}")
 
 def read_user_input(file_path):
     # Read user input from a text file
@@ -14,11 +30,17 @@ def read_user_input(file_path):
         return None
 
 def main():
-    # Specify the path to your CSV file
-    file_path = '/data.csv'
+    # Specify your GitHub repository URL
+    repo_url = 'https://raw.githubusercontent.com/Oscaretz/house_prediction'
+
+    # Specify the relative path to your CSV file within the repository
+    file_path = 'data.csv'
+
+    # Read data from GitHub
+    data = read_data_from_github(repo_url, file_path)
 
     # Instantiate the Cleaner class to clean the data
-    cleaner = Cleaner(file_path)
+    cleaner = Cleaner(data)
     cleaned_data = cleaner.clean()
 
     # Instantiate the LinearRegressionModel class and perform regression
