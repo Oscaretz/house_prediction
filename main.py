@@ -6,8 +6,7 @@ def main():
     user_input_data = pd.read_csv('input.csv')
     
     # Creating an instance of Cleaner class
-    #cleaner = Cleaner('house_prediction/data_today.csv')
-    cleaner = Cleaner('data_today.csv')
+    cleaner = Cleaner('house_prediction/data_today.csv')
     
     # Cleaning the data
     cleaned_data = cleaner.clean()
