@@ -1,4 +1,4 @@
-name: predictes
+name: run prediction
 
 on:
   workflow_dispatch:
