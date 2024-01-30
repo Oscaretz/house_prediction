@@ -1,17 +1,10 @@
-#Importamos las librerias a utilizar.
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-import statsmodels.api as sm
-import sys
-import os
+
 
 '''
 Cleaner, clase para recibir un archivo CSV y limpiarlo.
 Funciones (2):
-    - _init_: Recibir un archivo CSV.
-    - clean: limpiar la base de datos; regresa otra base de datos.
+    - __init__: Recibir un archivo CSV.
+    - clean: Limpiar la base de datos; regresa otra base de datos.
 '''
 class Cleaner:
     def __init__(self, file_path):
@@ -19,7 +12,7 @@ class Cleaner:
         self.df = pd.read_csv(file_path)
 
     def clean(self):
-         # Dropping duplicates
+        # Dropping duplicates
         self.df = self.df.drop_duplicates()
 
         # Reorganizing indices
@@ -107,8 +100,17 @@ class Cleaner:
             self.houses3 = self.houses2[(self.houses2[columna] >= lower_limit) & (self.houses2[columna] <= upper_limit)]
 
         self.houses3.reset_index(drop=True, inplace=True)
-        return self.houses3
 
+        return self.houses3
+'''
+LinearRegressionModel, clase para entrenar el modelo de regresion lineal en base a la DB limpia 
+para posteriormente aplicar la predicción.
+Funciones(4):
+    - __init__: Selecciona la base de datos a entrenar.
+    - perform_regression: Entrena el modelo de la regresión lineal.
+    - predict_user_input: Toma un df de casa a predecir; regresa métricas y el precio predicho.
+    - results: Tomamos todos los outputs anteriores y los mandamos a un nuevo archivo de texto con todos los resultados.
+'''
 class LinearRegressionModel:
     def __init__(self, data):
         self.data = data
@@ -147,18 +149,14 @@ class LinearRegressionModel:
     def predict_user_input(self, user_input):
         #Applying the trained model to predict based on the input
         user_prediction = self.model.predict(user_input)
-        self.user_input_data = user_input
-
-        self.userprediction = user_prediction[0]
-
         return user_prediction[0]
+    
+    def results(self, filename='output.csv'):
+        with open(filename, 'w', newline='') as csv_file:
+            # Write header to CSV file
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(['MAE', 'MSE', 'RMSE', 'R_squared', 'Predicted_price'])
 
-    def results(self, filename='output.txt'):
-        with open(filename, 'w') as file:
-            # Redirecting print statements to the file
-            original_stdout = sys.stdout
-            sys.stdout = file
-            
             X = self.data[['price_m2', 'surface', 'covered', 'lat', 'lon']]
             y = self.data['price']
 
@@ -173,19 +171,13 @@ class LinearRegressionModel:
             mse = mean_squared_error(y_test, predictions)
             rmse = mean_squared_error(y_test, predictions, squared=False)
             r_squared = model.score(X_test, y_test)
-            prediction = self.userprediction
+            prediction = self.predict_user_input(user_input_data)
 
-            file.write('House to predict: \n')
-            file.write(str(self.user_input_data) + '\n')
-            file.write(f'\n-Mean Absolute Error: {mae}')
-            file.write(f'\n-Mean Squared Error: {mse}')
-            file.write(f'\n-Root Mean Squared Error: {rmse}')
-            file.write(f'\n-R^2: {r_squared}')
-            file.write(f'\nPredicted price based on user input: ${prediction:,.2f}')
+            # Write results to CSV file
+            csv_writer.writerow([mae, mse, rmse, r_squared, prediction])
 
-            sys.stdout = original_stdout  # Resetting print output to console
+            print(f"Results have been saved to '{filename}'.")
 
-        return filename
 
-if __name__ == "__main__":
-    main()
+#---------------------------------------------------------------------
+
